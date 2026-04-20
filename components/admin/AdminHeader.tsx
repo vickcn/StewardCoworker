@@ -1,0 +1,1 @@
+export function AdminHeader() { return <div className='rounded-2xl border border-[var(--border)] bg-white p-5'><h1 className='text-2xl font-bold'>管理後台</h1><p className='mt-2 text-stone-600'>登入後可編輯 Google Sheet 與互動資料。</p></div>; }
