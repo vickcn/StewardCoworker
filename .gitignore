@@ -28,3 +28,6 @@ storage*/*
 
 
 /generated/prisma
+*.db
+*.db-journal
+tsconfig.tsbuildinfo
