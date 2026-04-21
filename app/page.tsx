@@ -1,24 +1,26 @@
-'use client';
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
-import { DashboardStats } from '@/components/dashboard/DashboardStats';
-import { FilterBar } from '@/components/dashboard/FilterBar';
-import { ItemGrid } from '@/components/dashboard/ItemGrid';
-import { ItemTable } from '@/components/dashboard/ItemTable';
-import { useItems } from '@/hooks/useItems';
-import { useDashboardFilters } from '@/hooks/useDashboardFilters';
-import { useAppContext } from '@/hooks/useAppContext';
+import { auth } from '@/lib/auth/auth';
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
-export default function HomePage() {
-  const { items, loading, error } = useItems();
-  const { keyword, setKeyword, category, setCategory, sortBy, setSortBy, filteredItems, stats } = useDashboardFilters(items);
-  const { viewMode } = useAppContext();
+export default async function RootPage() {
+  const session = await auth();
+  if (session?.user) redirect('/projects');
 
   return (
-    <main className="space-y-6">
-      <DashboardHeader />
-      <DashboardStats {...stats} />
-      <FilterBar keyword={keyword} onKeywordChange={setKeyword} category={category} onCategoryChange={setCategory} sortBy={sortBy} onSortChange={setSortBy} />
-      {loading ? <div>載入中...</div> : error ? <div className="text-red-600">{error}</div> : viewMode === 'grid' ? <ItemGrid items={filteredItems} /> : <ItemTable items={filteredItems} />}
-    </main>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+      <div className="text-center max-w-md space-y-6">
+        <h1 className="text-4xl font-bold text-gray-900">StewardCoworker</h1>
+        <p className="text-lg text-gray-600">多專案總務協作平台</p>
+        <p className="text-sm text-gray-500">
+          登入後可建立與管理多個總務專案，並生成公開分享連結供協作夥伴認領品項。
+        </p>
+        <Link
+          href="/api/auth/signin"
+          className="inline-block rounded-xl bg-blue-600 px-8 py-3 text-white font-medium hover:bg-blue-700"
+        >
+          使用 Google 帳號登入
+        </Link>
+      </div>
+    </div>
   );
 }

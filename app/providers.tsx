@@ -1,3 +1,6 @@
 'use client';
-import { AppProvider } from '@/hooks/useAppContext';
-export function Providers({ children }: { children: React.ReactNode }) { return <AppProvider>{children}</AppProvider>; }
+import { SessionProvider } from 'next-auth/react';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <SessionProvider>{children}</SessionProvider>;
+}

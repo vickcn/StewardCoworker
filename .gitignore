@@ -26,3 +26,5 @@ node_modules**
 issues*/*
 storage*/*
 
+
+/generated/prisma

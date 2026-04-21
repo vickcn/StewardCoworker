@@ -1,4 +1,3 @@
-export const SHEET_NAME = '2026-04-26各地聚會外展佈道';
 export const SHEET_COLUMNS = {
   ID: 'ID',
   ITEM_NAME: '品項',

@@ -3,9 +3,14 @@ import { Card } from '@/components/ui/Card';
 import { formatCurrency } from '@/lib/utils/currency';
 import type { ItemRecord } from '@/types/item';
 
-export function ItemCard({ item }: { item: ItemRecord }) {
+interface Props {
+  item: ItemRecord;
+  projectId: string;
+}
+
+export function ItemCard({ item, projectId }: Props) {
   return (
-    <Link href={`/items/${item.id}`}>
+    <Link href={`/projects/${projectId}/items/${item.id}`}>
       <Card className="h-full transition hover:-translate-y-0.5 hover:shadow-md">
         <h3 className="text-lg font-semibold">{item.itemName}</h3>
         <p className="mt-1 text-sm text-stone-500">{item.category}・需求 {item.requiredQty}</p>

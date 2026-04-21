@@ -1,19 +1,26 @@
 import { google } from 'googleapis';
 import { getGoogleServiceAccountAuth } from './service-account';
-import { SHEET_NAME, SHEET_COLUMNS } from '@/lib/constants/sheet';
+import { SHEET_COLUMNS } from '@/lib/constants/sheet';
 
 export async function getSheetsClient() {
   const auth = getGoogleServiceAccountAuth();
   return google.sheets({ version: 'v4', auth });
 }
 
-export async function readAllRows(spreadsheetId: string): Promise<string[][]> {
+export async function readAllRows(spreadsheetId: string, sheetName: string): Promise<string[][]> {
   const sheets = await getSheetsClient();
-  const res = await sheets.spreadsheets.values.get({ spreadsheetId, range: `${SHEET_NAME}!A:Z` });
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${sheetName}!A:Z`,
+  });
   return (res.data.values as string[][] | undefined) ?? [];
 }
 
-export async function updateRange(spreadsheetId: string, range: string, values: (string | number | null)[][]) {
+export async function updateRange(
+  spreadsheetId: string,
+  range: string,
+  values: (string | number | null)[][],
+) {
   const sheets = await getSheetsClient();
   return sheets.spreadsheets.values.update({
     spreadsheetId,
@@ -44,7 +51,8 @@ export function getRowById(rows: string[][], id: string) {
 
 export function columnLetter(index: number): string {
   if (index < 0) throw new Error('Invalid column index: column not found in spreadsheet.');
-  let n = index + 1, result = '';
+  let n = index + 1;
+  let result = '';
   while (n > 0) {
     const mod = (n - 1) % 26;
     result = String.fromCharCode(65 + mod) + result;
@@ -53,11 +61,11 @@ export function columnLetter(index: number): string {
   return result;
 }
 
-export async function ensureHeaders(spreadsheetId: string) {
+export async function ensureHeaders(spreadsheetId: string, sheetName: string) {
   const sheets = await getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${SHEET_NAME}!A1:Z1`,
+    range: `${sheetName}!A1:Z1`,
   });
   const currentHeaders = res.data.values?.[0] || [];
   const requiredHeaders = Object.values(SHEET_COLUMNS);
@@ -68,7 +76,7 @@ export async function ensureHeaders(spreadsheetId: string) {
     missingHeaders.forEach((h) => {
       if (!newHeaders.includes(h)) newHeaders.push(h);
     });
-    await updateRange(spreadsheetId, `${SHEET_NAME}!A1`, [newHeaders]);
+    await updateRange(spreadsheetId, `${sheetName}!A1`, [newHeaders]);
   }
   return { currentHeaders, missingHeaders };
 }

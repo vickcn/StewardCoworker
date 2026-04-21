@@ -1,0 +1,65 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String          @id @default(cuid())
+  email     String          @unique
+  name      String?
+  image     String?
+  createdAt DateTime        @default(now())
+  members   ProjectMember[]
+}
+
+model Project {
+  id          String              @id @default(cuid())
+  name        String
+  description String?
+  eventDate   String?
+  isArchived  Boolean             @default(false)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  members     ProjectMember[]
+  integration ProjectIntegration?
+  publicShare ProjectPublicShare?
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      String   @default("MEMBER")
+  joinedAt  DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model ProjectIntegration {
+  id            String  @id @default(cuid())
+  projectId     String  @unique
+  spreadsheetId String?
+  sheetName     String?
+  driveFolderId String?
+  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model ProjectPublicShare {
+  id                  String   @id @default(cuid())
+  projectId           String   @unique
+  shareToken          String   @unique @default(cuid())
+  isEnabled           Boolean  @default(false)
+  allowClaim          Boolean  @default(true)
+  allowComment        Boolean  @default(true)
+  allowRecommendation Boolean  @default(true)
+  allowReceiptUpload  Boolean  @default(false)
+  visibleFields       String   @default("[]")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  project             Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}

@@ -1,10 +1,6 @@
 import NextAuth from 'next-auth';
 import Google from 'next-auth/providers/google';
-
-const allowedEditors = (process.env.ALLOWED_EDITOR_EMAILS || '')
-  .split(',')
-  .map((v) => v.trim().toLowerCase())
-  .filter(Boolean);
+import { db } from '@/lib/db';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -14,15 +10,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    authorized({ auth, request }) {
-      const { pathname } = request.nextUrl;
-      if (!pathname.startsWith('/admin') && !pathname.startsWith('/api/admin')) return true;
-      const email = auth?.user?.email?.toLowerCase();
-      return !!email && allowedEditors.includes(email);
+    async signIn({ user }) {
+      if (!user.email) return false;
+      // Upsert platform user record on every sign-in
+      await db.user.upsert({
+        where: { email: user.email },
+        update: { name: user.name ?? null, image: user.image ?? null },
+        create: { email: user.email, name: user.name ?? null, image: user.image ?? null },
+      });
+      return true;
     },
-    signIn({ user }) {
-      const email = user.email?.toLowerCase();
-      return !!email && allowedEditors.includes(email);
+    async session({ session }) {
+      if (session.user?.email) {
+        const dbUser = await db.user.findUnique({ where: { email: session.user.email } });
+        if (dbUser) {
+          (session.user as typeof session.user & { id: string }).id = dbUser.id;
+        }
+      }
+      return session;
     },
   },
   trustHost: true,
