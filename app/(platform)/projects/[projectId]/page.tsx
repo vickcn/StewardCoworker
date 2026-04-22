@@ -6,6 +6,7 @@ import { computeStats } from '@/lib/data/stats';
 import { ItemTable } from '@/components/dashboard/ItemTable';
 import { ItemGrid } from '@/components/dashboard/ItemGrid';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
+import { env } from '@/lib/utils/env';
 import Link from 'next/link';
 
 export default async function ProjectDashboardPage({
@@ -40,7 +41,7 @@ export default async function ProjectDashboardPage({
   const stats = computeStats(items);
   const publicShare = await db.projectPublicShare.findUnique({ where: { projectId } });
   const shareUrl = publicShare?.isEnabled
-    ? `${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/p/${publicShare.shareToken}`
+    ? `${env.baseUrl()}/p/${publicShare.shareToken}`
     : null;
 
   return (

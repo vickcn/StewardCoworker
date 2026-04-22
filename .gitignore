@@ -13,7 +13,9 @@
 *.md
 *.iss
 *bat
-*.env*
+.env
+.env.local
+.env.*.local
 tmp*
 *pyc*
 *.zip
