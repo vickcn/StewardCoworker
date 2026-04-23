@@ -22,7 +22,7 @@ tmp*
 dataP**
 **.DS_Store
 node_modules**
-
+**code-workspace
 
 *output*/
 issues*/*
