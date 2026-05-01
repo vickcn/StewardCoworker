@@ -45,3 +45,4 @@ storage*/*
 *.db
 *.db-journal
 tsconfig.tsbuildinfo
+.vercel
