@@ -31,6 +31,24 @@ const updateIntegrationSchema = z.object({
   driveFolderId: z.string().nullable().optional(),
 });
 
+function normalizeSpreadsheetId(value: string | null | undefined) {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  const input = value.trim();
+  if (!input) return null;
+  const match = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return match?.[1] ?? input;
+}
+
+function normalizeDriveFolderId(value: string | null | undefined) {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  const input = value.trim();
+  if (!input) return null;
+  const match = input.match(/\/folders\/([a-zA-Z0-9-_]+)/);
+  return match?.[1] ?? input;
+}
+
 // PUT /api/projects/[projectId]/integrations
 export async function PUT(req: Request, { params }: { params: Promise<{ projectId: string }> }) {
   const session = await auth();
@@ -44,10 +62,23 @@ export async function PUT(req: Request, { params }: { params: Promise<{ projectI
   const parsed = updateIntegrationSchema.safeParse(body);
   if (!parsed.success) return fail('Invalid input', 400, parsed.error.flatten());
 
+  const normalized = {
+    spreadsheetId: normalizeSpreadsheetId(parsed.data.spreadsheetId),
+    sheetName: parsed.data.sheetName === undefined ? undefined : (parsed.data.sheetName?.trim() || null),
+    driveFolderId: normalizeDriveFolderId(parsed.data.driveFolderId),
+  };
+
   const integration = await db.projectIntegration.upsert({
     where: { projectId },
-    update: parsed.data,
-    create: { projectId, ...parsed.data },
+    update: {
+      ...normalized,
+      googleCredentialUserId: member.userId,
+    },
+    create: {
+      projectId,
+      ...normalized,
+      googleCredentialUserId: member.userId,
+    },
   });
 
   return ok(integration);

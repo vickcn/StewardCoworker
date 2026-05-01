@@ -1,8 +1,9 @@
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { ok, fail } from '@/lib/utils/response';
-import { fetchProjectItems } from '@/lib/google/project-integration';
+import { createProjectItem, fetchProjectItems } from '@/lib/google/project-integration';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 async function resolveCallerMembership(projectId: string, email: string) {
   const user = await db.user.findUnique({ where: { email } });
@@ -33,9 +34,18 @@ export async function GET(
   }
 }
 
-// POST /api/projects/[projectId]/items — trigger manual cache revalidation
+const createItemSchema = z.object({
+  itemName: z.string().min(1).max(200),
+  category: z.enum(['食材', '器材', '文具', '場佈', '其他']),
+  requiredQty: z.coerce.number().nonnegative(),
+  budgetUnitPrice: z.coerce.number().nonnegative(),
+  actualUnitPrice: z.coerce.number().nonnegative().nullable().optional(),
+  claimant: z.string().max(100).nullable().optional(),
+});
+
+// POST /api/projects/[projectId]/items
 export async function POST(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
   const session = await auth();
@@ -45,6 +55,16 @@ export async function POST(
   const member = await resolveCallerMembership(projectId, session.user.email);
   if (!member || member.role === 'MEMBER') return fail('Forbidden', 403);
 
-  revalidatePath(`/projects/${projectId}`);
-  return ok({ revalidated: true });
+  const body = await req.json();
+  const parsed = createItemSchema.safeParse(body);
+  if (!parsed.success) return fail('Invalid input', 400, parsed.error.flatten());
+
+  try {
+    await createProjectItem(projectId, parsed.data);
+    revalidatePath(`/projects/${projectId}`);
+    return ok({ created: true }, 201);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to create item';
+    return fail(message, 500);
+  }
 }

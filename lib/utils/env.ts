@@ -30,10 +30,9 @@ export const env = {
   googleOAuthClientId: () => required('GOOGLE_OAUTH_CLIENT_ID'),
   googleOAuthClientSecret: () => required('GOOGLE_OAUTH_CLIENT_SECRET'),
 
-  // Google Service Account (used for Sheets + Drive API)
-  googleServiceAccountEmail: () => required('GOOGLE_SERVICE_ACCOUNT_EMAIL'),
-  // GOOGLE_PRIVATE_KEY is stored with literal \n — convert to real newlines
-  googlePrivateKey: () => required('GOOGLE_PRIVATE_KEY').replace(/\\n/g, '\n'),
+  // Legacy Service Account keys (optional in OAuth-user mode)
+  googleServiceAccountEmail: () => optional('GOOGLE_SERVICE_ACCOUNT_EMAIL'),
+  googlePrivateKey: () => optional('GOOGLE_PRIVATE_KEY').replace(/\\n/g, '\n'),
 
   // SQLite database path (default: prisma/dev.db relative to cwd)
   databaseUrl: () =>
@@ -54,8 +53,6 @@ const SERVER_REQUIRED_KEYS = [
   'AUTH_SECRET',
   'GOOGLE_OAUTH_CLIENT_ID',
   'GOOGLE_OAUTH_CLIENT_SECRET',
-  'GOOGLE_SERVICE_ACCOUNT_EMAIL',
-  'GOOGLE_PRIVATE_KEY',
 ] as const;
 
 export function validateRequiredEnvs(): void {

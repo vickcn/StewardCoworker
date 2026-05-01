@@ -7,12 +7,16 @@ generator client {
 }
 
 model User {
-  id        String          @id @default(cuid())
-  email     String          @unique
-  name      String?
-  image     String?
-  createdAt DateTime        @default(now())
-  members   ProjectMember[]
+  id                  String          @id @default(cuid())
+  email               String          @unique
+  name                String?
+  image               String?
+  googleAccessToken   String?
+  googleRefreshToken  String?
+  googleTokenExpiresAt Int?
+  googleScope         String?
+  createdAt           DateTime        @default(now())
+  members             ProjectMember[]
 }
 
 model Project {
@@ -41,12 +45,13 @@ model ProjectMember {
 }
 
 model ProjectIntegration {
-  id            String  @id @default(cuid())
-  projectId     String  @unique
-  spreadsheetId String?
-  sheetName     String?
-  driveFolderId String?
-  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id                     String  @id @default(cuid())
+  projectId              String  @unique
+  spreadsheetId          String?
+  sheetName              String?
+  driveFolderId          String?
+  googleCredentialUserId String?
+  project                Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model ProjectPublicShare {

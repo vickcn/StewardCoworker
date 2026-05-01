@@ -1,14 +1,33 @@
 import { google } from 'googleapis';
-import { getGoogleServiceAccountAuth } from './service-account';
+import type { OAuth2Client } from 'google-auth-library';
 import { SHEET_COLUMNS } from '@/lib/constants/sheet';
 
-export async function getSheetsClient() {
-  const auth = getGoogleServiceAccountAuth();
+export async function getSheetsClient(auth: OAuth2Client) {
   return google.sheets({ version: 'v4', auth });
 }
 
-export async function readAllRows(spreadsheetId: string, sheetName: string): Promise<string[][]> {
-  const sheets = await getSheetsClient();
+export async function listSheetTitles(
+  auth: OAuth2Client,
+  spreadsheetId: string,
+): Promise<string[]> {
+  const sheets = await getSheetsClient(auth);
+  const res = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: 'sheets(properties(title))',
+    includeGridData: false,
+  });
+
+  return (res.data.sheets ?? [])
+    .map((s) => s.properties?.title)
+    .filter((title): title is string => !!title);
+}
+
+export async function readAllRows(
+  auth: OAuth2Client,
+  spreadsheetId: string,
+  sheetName: string,
+): Promise<string[][]> {
+  const sheets = await getSheetsClient(auth);
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId,
     range: `${sheetName}!A:Z`,
@@ -17,16 +36,45 @@ export async function readAllRows(spreadsheetId: string, sheetName: string): Pro
 }
 
 export async function updateRange(
+  auth: OAuth2Client,
   spreadsheetId: string,
   range: string,
   values: (string | number | null)[][],
 ) {
-  const sheets = await getSheetsClient();
+  const sheets = await getSheetsClient(auth);
   return sheets.spreadsheets.values.update({
     spreadsheetId,
     range,
     valueInputOption: 'USER_ENTERED',
     requestBody: { values },
+  });
+}
+
+export async function appendRow(
+  auth: OAuth2Client,
+  spreadsheetId: string,
+  range: string,
+  values: (string | number | null)[],
+) {
+  const sheets = await getSheetsClient(auth);
+  return sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range,
+    valueInputOption: 'USER_ENTERED',
+    insertDataOption: 'INSERT_ROWS',
+    requestBody: { values: [values] },
+  });
+}
+
+export async function clearRange(
+  auth: OAuth2Client,
+  spreadsheetId: string,
+  range: string,
+) {
+  const sheets = await getSheetsClient(auth);
+  return sheets.spreadsheets.values.clear({
+    spreadsheetId,
+    range,
   });
 }
 
@@ -61,8 +109,8 @@ export function columnLetter(index: number): string {
   return result;
 }
 
-export async function ensureHeaders(spreadsheetId: string, sheetName: string) {
-  const sheets = await getSheetsClient();
+export async function ensureHeaders(auth: OAuth2Client, spreadsheetId: string, sheetName: string) {
+  const sheets = await getSheetsClient(auth);
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId,
     range: `${sheetName}!A1:Z1`,
@@ -76,7 +124,7 @@ export async function ensureHeaders(spreadsheetId: string, sheetName: string) {
     missingHeaders.forEach((h) => {
       if (!newHeaders.includes(h)) newHeaders.push(h);
     });
-    await updateRange(spreadsheetId, `${sheetName}!A1`, [newHeaders]);
+    await updateRange(auth, spreadsheetId, `${sheetName}!A1`, [newHeaders]);
   }
   return { currentHeaders, missingHeaders };
 }

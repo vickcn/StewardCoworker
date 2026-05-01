@@ -44,7 +44,7 @@ export function CommentForm({ shareToken, itemId }: Props) {
       <h3 className="font-semibold text-gray-900">留言板</h3>
       <form onSubmit={submit} className="mt-4 space-y-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700">你的名稱 *</label>
+          <label className="block text-sm font-medium text-gray-700">你的名字 *</label>
           <input
             required
             value={author}

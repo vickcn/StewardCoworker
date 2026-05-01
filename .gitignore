@@ -16,6 +16,10 @@
 .env
 .env.local
 .env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
 tmp*
 *pyc*
 *.zip
@@ -24,6 +28,13 @@ dataP**
 node_modules**
 .next
 **code-workspace
+**authorization
+authorization/*.json
+**/authorization/*.json
+client_secret*.json
+*service-account*.json
+*.pem
+*.p12
 
 *output*/
 issues*/*

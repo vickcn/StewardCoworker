@@ -24,6 +24,7 @@ export default async function ProjectDashboardPage({
       })
     : null;
   if (!member) notFound();
+  const canManageItems = member.role === 'OWNER' || member.role === 'ADMIN';
 
   const integration = await db.projectIntegration.findUnique({ where: { projectId } });
   const hasIntegration = !!(integration?.spreadsheetId && integration.sheetName);
@@ -76,11 +77,28 @@ export default async function ProjectDashboardPage({
         <p className="text-sm text-red-600">{fetchError}</p>
       )}
 
+      {hasIntegration && canManageItems && (
+        <div className="flex justify-end">
+          <Link
+            href={`/projects/${projectId}/items/new`}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            新增品項
+          </Link>
+        </div>
+      )}
+
       {items.length > 0 && (
         <>
           <DashboardStats {...stats} />
           <ItemGrid items={items} projectId={projectId} />
         </>
+      )}
+
+      {!fetchError && hasIntegration && items.length === 0 && (
+        <p className="text-sm text-gray-500 rounded-lg border border-gray-200 bg-white px-4 py-3">
+          目前沒有可顯示的品項，請先新增品項或檢查 Google Sheet 的標題列是否正確。
+        </p>
       )}
     </div>
   );

@@ -69,7 +69,10 @@ export default async function PublicItemDetailPage({
       )}
 
       {share.allowRecommendation && (
-        <PublicRecommendationForm shareToken={shareToken} itemId={item.id} />
+        <PublicRecommendationForm
+          shareToken={shareToken}
+          itemId={item.id}
+        />
       )}
 
       {share.allowComment && (

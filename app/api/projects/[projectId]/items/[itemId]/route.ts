@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { ok, fail } from '@/lib/utils/response';
 import {
+  deleteProjectItem,
   fetchProjectItemById,
   updateItemField,
   updateItemInteractiveData,
@@ -77,6 +78,28 @@ export async function PUT(
     return ok({ updated: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Update failed';
+    return fail(message, 500);
+  }
+}
+
+// DELETE /api/projects/[projectId]/items/[itemId]
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ projectId: string; itemId: string }> },
+) {
+  const session = await auth();
+  if (!session?.user?.email) return fail('Unauthorized', 401);
+  const { projectId, itemId } = await params;
+
+  const member = await requireMembership(projectId, session.user.email);
+  if (!member || member.role === 'MEMBER') return fail('Forbidden', 403);
+
+  try {
+    await deleteProjectItem(projectId, itemId);
+    revalidatePath(`/projects/${projectId}`);
+    return ok({ deleted: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Delete failed';
     return fail(message, 500);
   }
 }
