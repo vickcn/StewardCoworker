@@ -22,6 +22,7 @@ tmp*
 dataP**
 **.DS_Store
 node_modules**
+.next
 **code-workspace
 
 *output*/
