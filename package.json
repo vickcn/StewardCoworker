@@ -11,11 +11,13 @@
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.7.0",
+    "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
     "better-sqlite3": "^12.9.0",
     "googleapis": "^150.0.1",
     "next": "^15.0.0",
     "next-auth": "5.0.0-beta.29",
+    "pg": "^8.20.0",
     "prisma": "^7.7.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

@@ -1,5 +1,3 @@
-import path from 'path';
-
 // ─── Core accessor helpers ────────────────────────────────────────────────────
 
 function required(key: string): string {
@@ -34,9 +32,8 @@ export const env = {
   googleServiceAccountEmail: () => optional('GOOGLE_SERVICE_ACCOUNT_EMAIL'),
   googlePrivateKey: () => optional('GOOGLE_PRIVATE_KEY').replace(/\\n/g, '\n'),
 
-  // SQLite database path (default: prisma/dev.db relative to cwd)
-  databaseUrl: () =>
-    optional('DATABASE_URL', `file:${path.join(process.cwd(), 'prisma', 'dev.db')}`),
+  // PostgreSQL / Neon connection string (required)
+  databaseUrl: () => required('DATABASE_URL'),
 
   // Public base URL for share links — available both server-side and client-side
   // because of the NEXT_PUBLIC_ prefix
